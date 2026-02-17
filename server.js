@@ -63,10 +63,14 @@ async function loadSubmissionsTurso() {
     await tursoClient.execute('CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)');
     const rs = await tursoClient.execute({ sql: "SELECT value FROM store WHERE key = 'submissions'", args: [] });
     const row = rs.rows[0];
-    const raw = row != null ? (row.value ?? row[0] ?? row['value']) : null;
+    // Rows can be array-like (row[0]) or object (row.value / row[columns[0]])
+    const firstCol = rs.columns && rs.columns[0];
+    const raw = row == null ? null
+      : (typeof row[0] !== 'undefined' ? row[0] : row[firstCol] ?? row.value ?? row['value']);
     if (raw != null && raw !== '') {
       const data = JSON.parse(String(raw));
-      return Array.isArray(data) ? data : [];
+      const out = Array.isArray(data) ? data : [];
+      return out;
     }
   } catch (err) {
     console.error('Turso load failed:', err.message);
@@ -182,7 +186,15 @@ app.post('/api/admin/logout', (req, res) => {
 });
 
 // API: Get all submissions (admin only)
-app.get('/api/submissions', requireAuth, (req, res) => {
+app.get('/api/submissions', requireAuth, async (req, res) => {
+  // If using Turso and in-memory is empty, try loading from DB once (handles startup load failure)
+  if (tursoClient && submissions.length === 0) {
+    const loaded = await loadSubmissionsTurso();
+    if (loaded.length > 0) {
+      submissions.length = 0;
+      submissions.push(...loaded);
+    }
+  }
   res.json({ success: true, data: [...submissions] });
 });
 
