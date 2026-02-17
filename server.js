@@ -23,11 +23,24 @@ const ADMIN_USERS = { omar: 'test123@' };
 
 const sessionSecret = (process.env.SESSION_SECRET || 'goodfood-swot-secret-change-in-production').trim();
 
-// Persistent storage: JSON file (survives server restarts)
-const DATA_DIR = path.join(__dirname, 'data');
+// Storage: optional Turso (persists on ephemeral hosts) or JSON file (with optional DATA_PATH)
+const TURSO_URL = (process.env.TURSO_DATABASE_URL || '').trim();
+const TURSO_TOKEN = (process.env.TURSO_AUTH_TOKEN || '').trim();
+const USE_TURSO = TURSO_URL && TURSO_TOKEN;
+const DATA_DIR = process.env.DATA_PATH ? path.resolve(process.env.DATA_PATH) : path.join(__dirname, 'data');
 const SUBMISSIONS_FILE = path.join(DATA_DIR, 'submissions.json');
 
-function loadSubmissions() {
+let tursoClient = null;
+if (USE_TURSO) {
+  try {
+    const { createClient } = require('@libsql/client');
+    tursoClient = createClient({ url: TURSO_URL, authToken: TURSO_TOKEN });
+  } catch (err) {
+    console.warn('Turso client init failed, falling back to file:', err.message);
+  }
+}
+
+function loadSubmissionsSync() {
   try {
     if (fs.existsSync(SUBMISSIONS_FILE)) {
       const raw = fs.readFileSync(SUBMISSIONS_FILE, 'utf8');
@@ -40,16 +53,49 @@ function loadSubmissions() {
   return [];
 }
 
-function saveSubmissions() {
+async function loadSubmissionsTurso() {
+  if (!tursoClient) return [];
+  try {
+    await tursoClient.execute('CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)');
+    const rs = await tursoClient.execute({ sql: "SELECT value FROM store WHERE key = 'submissions'", args: [] });
+    const row = rs.rows[0];
+    if (row && row[0] != null) {
+      const data = JSON.parse(String(row[0]));
+      return Array.isArray(data) ? data : [];
+    }
+  } catch (err) {
+    console.warn('Turso load failed:', err.message);
+  }
+  return [];
+}
+
+function saveSubmissionsSync(arr) {
   try {
     if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-    fs.writeFileSync(SUBMISSIONS_FILE, JSON.stringify(submissions, null, 2), 'utf8');
+    fs.writeFileSync(SUBMISSIONS_FILE, JSON.stringify(arr, null, 2), 'utf8');
   } catch (err) {
     console.error('Could not save submissions:', err.message);
   }
 }
 
-let submissions = loadSubmissions();
+async function saveSubmissionsTurso(arr) {
+  if (!tursoClient) return;
+  try {
+    await tursoClient.execute({
+      sql: "INSERT OR REPLACE INTO store (key, value) VALUES ('submissions', ?)",
+      args: [JSON.stringify(arr)],
+    });
+  } catch (err) {
+    console.error('Turso save failed:', err.message);
+  }
+}
+
+async function saveSubmissions(arr) {
+  if (tursoClient) await saveSubmissionsTurso(arr);
+  else saveSubmissionsSync(arr);
+}
+
+let submissions = USE_TURSO ? [] : loadSubmissionsSync();
 
 // Middleware
 app.use(cors({ origin: true, credentials: true }));
@@ -98,7 +144,7 @@ app.get('/api/submissions', requireAuth, (req, res) => {
 });
 
 // API: Create submission (public - employee form)
-app.post('/api/submissions', (req, res) => {
+app.post('/api/submissions', async (req, res) => {
   const body = req.body;
   const id = Date.now().toString();
   const record = {
@@ -115,14 +161,14 @@ app.post('/api/submissions', (req, res) => {
     comments: body.comments || '',
   };
   submissions.push(record);
-  saveSubmissions();
+  await saveSubmissions(submissions);
   res.status(201).json({ success: true, data: record });
 });
 
 // API: Clear all submissions (admin only)
-app.delete('/api/submissions', requireAuth, (req, res) => {
+app.delete('/api/submissions', requireAuth, async (req, res) => {
   submissions.length = 0;
-  saveSubmissions();
+  await saveSubmissions(submissions);
   res.json({ success: true, data: [] });
 });
 
@@ -187,12 +233,20 @@ app.get('/admin/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin-login.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`GoodFood SWOT server running at http://localhost:${PORT}`);
-  console.log('.env path checked:', envPath);
-  if (!HAS_OPENAI_KEY) {
-    console.warn('OPENAI_API_KEY not set. Add it to .env in the same folder as server.js and restart.');
-  } else {
-    console.log('OpenAI API key loaded (' + OPENAI_API_KEY.substring(0, 12) + '...). AI Analysis enabled.');
+(async function start() {
+  if (USE_TURSO) {
+    submissions = await loadSubmissionsTurso();
+    console.log('Turso: loaded', submissions.length, 'submissions');
   }
-});
+  app.listen(PORT, () => {
+    console.log(`GoodFood SWOT server running at http://localhost:${PORT}`);
+    console.log('.env path checked:', envPath);
+    if (USE_TURSO) console.log('Storage: Turso (persistent)');
+    else console.log('Storage: JSON file at', SUBMISSIONS_FILE);
+    if (!HAS_OPENAI_KEY) {
+      console.warn('OPENAI_API_KEY not set. Add it to .env in the same folder as server.js and restart.');
+    } else {
+      console.log('OpenAI API key loaded (' + OPENAI_API_KEY.substring(0, 12) + '...). AI Analysis enabled.');
+    }
+  });
+})();

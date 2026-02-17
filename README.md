@@ -6,8 +6,8 @@ A production-ready SWOT analysis web application for GoodFood Canada. Employees 
 
 - **Backend**: Node.js + Express
 - **Frontend**: Vanilla HTML/CSS/JavaScript (no frameworks)
-- **Storage**: In-memory (designed for easy database upgrade)
-- **AI**: Anthropic Claude API via server-side proxy (optional)
+- **Storage**: JSON file by default; optional **Turso** (libSQL) for hosted deployments where the filesystem is ephemeral
+- **AI**: OpenAI API via server-side proxy (optional)
 
 ## Project Structure
 
@@ -77,8 +77,29 @@ A production-ready SWOT analysis web application for GoodFood Canada. Employees 
 
 - Set `NODE_ENV=production` and `PORT` as needed.
 - Keep `.env` out of version control (already in `.gitignore`).
-- For production, add a database (e.g. MongoDB, PostgreSQL, SQLite) and replace the in-memory `submissions` array in `server.js` with DB calls.
-- Consider adding authentication for `/admin` and rate limiting for `/api/submissions` and `/api/analyze`.
+
+### Why submissions disappear after restart (Railway, Render, etc.)
+
+Many hosts use an **ephemeral filesystem**: the app’s disk is wiped on every restart or redeploy. The default JSON file (`data/submissions.json`) then disappears. Use one of the options below so data persists.
+
+### Option 1: Turso (recommended for hosted apps)
+
+[Turso](https://turso.tech) is a free, hosted SQLite-compatible DB. Submissions are stored there and survive restarts.
+
+1. Create a Turso account and a database at [turso.tech](https://turso.tech).
+2. Get the database URL and an auth token (e.g. `turso db show mydb --url` and `turso db tokens create mydb`).
+3. In your host’s environment (e.g. Railway, Render), set:
+   - `TURSO_DATABASE_URL` = your database URL (e.g. `libsql://my-db-xxx.turso.io`)
+   - `TURSO_AUTH_TOKEN` = your auth token
+4. Redeploy. The app will use Turso instead of the JSON file; submissions will persist across restarts.
+
+### Option 2: Persistent volume (if your host supports it)
+
+If the host lets you mount a persistent volume, set:
+
+- `DATA_PATH` = the path to that volume (e.g. `/data` or `/app/persistent`).
+
+The app will write `submissions.json` there so it survives restarts.
 
 ## Brand
 
