@@ -104,6 +104,15 @@
       display: none;
     }
     .error.visible { display: block; }
+    .captcha-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .captcha-question {
+      font-size: 1rem;
+      color: rgba(247, 242, 236, 0.9);
+    }
     .back {
       display: inline-block;
       margin-top: 1.5rem;
@@ -128,6 +137,14 @@
         <label for="password">Password</label>
         <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Enter password">
       </div>
+      <div class="form-group">
+        <label for="captcha">Captcha</label>
+        <div class="captcha-row">
+          <span class="captcha-question" id="captcha-question">Loading…</span>
+          <input type="text" id="captcha" name="captcha" required inputmode="numeric" pattern="[0-9]*" placeholder="Answer" autocomplete="off" style="width: 80px;">
+        </div>
+        <input type="hidden" id="captcha-token" name="captcha-token">
+      </div>
       <p class="error" id="login-error"></p>
       <button type="submit" class="btn" id="btn-submit">Sign in</button>
     </form>
@@ -137,8 +154,26 @@
     const form = document.getElementById('login-form');
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
+    const captchaQuestion = document.getElementById('captcha-question');
+    const captchaInput = document.getElementById('captcha');
+    const captchaTokenInput = document.getElementById('captcha-token');
     const errorEl = document.getElementById('login-error');
     const btnSubmit = document.getElementById('btn-submit');
+
+    async function loadCaptcha() {
+      try {
+        const res = await fetch('/api/captcha');
+        const data = await res.json();
+        if (data.question && data.token) {
+          captchaQuestion.textContent = data.question;
+          captchaTokenInput.value = data.token;
+          captchaInput.value = '';
+        }
+      } catch (e) {
+        captchaQuestion.textContent = 'Captcha unavailable';
+      }
+    }
+    loadCaptcha();
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -153,6 +188,8 @@
           body: JSON.stringify({
             username: usernameInput.value.trim(),
             password: passwordInput.value,
+            captchaAnswer: captchaInput.value.trim(),
+            captchaToken: captchaTokenInput.value,
           }),
         });
         const data = await res.json();
@@ -162,9 +199,11 @@
         }
         errorEl.textContent = data.error || 'Sign in failed. Try again.';
         errorEl.classList.add('visible');
+        loadCaptcha(); // new captcha on error
       } catch (err) {
         errorEl.textContent = 'Network error. Try again.';
         errorEl.classList.add('visible');
+        loadCaptcha();
       } finally {
         btnSubmit.disabled = false;
       }

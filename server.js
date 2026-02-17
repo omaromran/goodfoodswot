@@ -11,6 +11,7 @@ if (!process.env.OPENAI_API_KEY) {
 const OPENAI_API_KEY = (process.env.OPENAI_API_KEY || '').trim();
 const HAS_OPENAI_KEY = OPENAI_API_KEY.length > 0 && OPENAI_API_KEY !== 'your_key_here';
 
+const crypto = require('crypto');
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
@@ -18,8 +19,11 @@ const session = require('express-session');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Admin users (for now: single hardcoded account; later move to env or DB)
-const ADMIN_USERS = { omar: 'test123@' };
+// Admin users (for now: hardcoded; later move to env or DB)
+const ADMIN_USERS = {
+  omar: 'alwaysN1@',
+  gfadmin: 'thebestisyettocome1!',
+};
 
 const sessionSecret = (process.env.SESSION_SECRET || 'goodfood-swot-secret-change-in-production').trim();
 
@@ -116,9 +120,45 @@ function requireAuth(req, res, next) {
   return res.status(401).json({ success: false, error: 'Unauthorized' });
 }
 
-// Auth: login
+// Easy captcha: simple math (signed token so answer can't be forged)
+const CAPTCHA_SECRET = (process.env.CAPTCHA_SECRET || sessionSecret).trim();
+const CAPTCHA_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+function createCaptchaToken(answer, exp) {
+  const payload = Buffer.from(JSON.stringify({ a: answer, exp }), 'utf8').toString('base64url');
+  const sig = crypto.createHmac('sha256', CAPTCHA_SECRET).update(payload).digest('base64url');
+  return payload + '.' + sig;
+}
+
+function verifyCaptchaToken(token, userAnswer) {
+  if (!token || typeof userAnswer !== 'string') return false;
+  const parts = token.split('.');
+  if (parts.length !== 2) return false;
+  try {
+    const payload = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8'));
+    const sig = crypto.createHmac('sha256', CAPTCHA_SECRET).update(parts[0]).digest('base64url');
+    if (sig !== parts[1] || Date.now() > payload.exp) return false;
+    return String(payload.a) === String(userAnswer).trim();
+  } catch (e) {
+    return false;
+  }
+}
+
+app.get('/api/captcha', (req, res) => {
+  const a = Math.floor(Math.random() * 9) + 1;
+  const b = Math.floor(Math.random() * 9) + 1;
+  const answer = a + b;
+  const exp = Date.now() + CAPTCHA_TTL_MS;
+  const token = createCaptchaToken(answer, exp);
+  res.json({ question: `What is ${a} + ${b}?`, token });
+});
+
+// Auth: login (requires valid captcha)
 app.post('/api/admin/login', (req, res) => {
-  const { username, password } = req.body || {};
+  const { username, password, captchaAnswer, captchaToken } = req.body || {};
+  if (!verifyCaptchaToken(captchaToken, captchaAnswer)) {
+    return res.status(400).json({ success: false, error: 'Incorrect captcha. Please try again.' });
+  }
   const expectedPassword = ADMIN_USERS[username];
   if (!username || !password || expectedPassword !== password) {
     return res.status(401).json({ success: false, error: 'Invalid username or password' });
@@ -173,6 +213,26 @@ app.delete('/api/submissions', requireAuth, async (req, res) => {
   submissions.length = 0;
   await saveSubmissions(submissions);
   res.json({ success: true, data: [] });
+});
+
+// Debug: storage status (public – so you can hit this on your live site to see if Turso is used)
+app.get('/api/debug/storage', async (req, res) => {
+  const out = {
+    storage: tursoClient ? 'turso' : 'file',
+    inMemoryCount: submissions.length,
+    tursoConfigured: USE_TURSO,
+    tursoClientExists: !!tursoClient,
+  };
+  if (tursoClient) {
+    try {
+      const rs = await tursoClient.execute({ sql: 'SELECT key, length(value) as len FROM store', args: [] });
+      out.tursoRowCount = rs.rows.length;
+      out.tursoRows = rs.rows.map((r) => ({ key: r.key ?? r[0], len: r.len ?? r[1] }));
+    } catch (e) {
+      out.tursoError = e.message;
+    }
+  }
+  res.json(out);
 });
 
 // Debug: check if OpenAI key is loaded (admin only)
