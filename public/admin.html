@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SWOT Intelligence Dashboard | GoodFood Canada</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red:      #E8342A;
+      --green:    #1A6B3C;
+      --cream:    #F7F2EC;
+      --charcoal: #1C1C1A;
+      --warm:     #D4A853;
+      --blue:     #3B5B9A;
+      --sidebar-bg: #161614;
+      --panel-bg:  #1e1e1c;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0f0f0e;
+      color: var(--cream);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      min-width: 240px;
+      background: var(--sidebar-bg);
+      padding: 1.5rem 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-logo {
+      padding: 0 1.25rem 1.5rem;
+      border-bottom: 1px solid rgba(247, 242, 236, 0.1);
+      margin-bottom: 1rem;
+    }
+    .sidebar-logo span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--green), var(--warm));
+      border-radius: 10px;
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: 1.2rem;
+    }
+    .sidebar nav {
+      flex: 1;
+    }
+    .sidebar nav a {
+      display: block;
+      padding: 0.6rem 1.25rem;
+      color: rgba(247, 242, 236, 0.7);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s, background 0.2s;
+    }
+    .sidebar nav a:hover,
+    .sidebar nav a.active {
+      color: var(--cream);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .sidebar nav a.active { border-left: 3px solid var(--green); padding-left: calc(1.25rem - 3px); }
+    .sidebar-badge {
+      margin: 1rem 1.25rem 0;
+      padding: 0.35rem 0.75rem;
+      background: rgba(26, 107, 60, 0.3);
+      color: #86efac;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-radius: 999px;
+      width: fit-content;
+    }
+    .sidebar-signout {
+      display: block;
+      width: 100%;
+      padding: 0.6rem 1.25rem;
+      margin: 1rem 1.25rem 0;
+      color: rgba(247, 242, 236, 0.6);
+      font-size: 0.9rem;
+      font-family: inherit;
+      text-align: left;
+      cursor: pointer;
+      background: none;
+      border: none;
+      border-top: 1px solid rgba(247, 242, 236, 0.08);
+      transition: color 0.2s, background 0.2s;
+    }
+    .sidebar-signout:hover {
+      color: var(--cream);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .sidebar-footer {
+      padding: 1.25rem;
+      font-size: 0.75rem;
+      color: rgba(247, 242, 236, 0.4);
+      border-top: 1px solid rgba(247, 242, 236, 0.08);
+      margin-top: auto;
+    }
+
+    /* Main content */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    /* Top bar */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(15, 15, 14, 0.9);
+      backdrop-filter: blur(8px);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      border-bottom: 1px solid rgba(247, 242, 236, 0.08);
+    }
+    .topbar-title {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      border: none;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-refresh {
+      background: rgba(247, 242, 236, 0.1);
+      color: var(--cream);
+    }
+    .btn-ai {
+      background: linear-gradient(135deg, var(--green), var(--blue));
+      color: white;
+    }
+    .btn-clear {
+      background: rgba(232, 52, 42, 0.2);
+      color: #fca5a5;
+    }
+
+    /* Content area */
+    .content {
+      padding: 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Stats strip */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 1024px) { .stats-strip { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 600px)  { .stats-strip { grid-template-columns: 1fr 1fr; } }
+
+    .stat-card {
+      background: var(--panel-bg);
+      border-radius: 12px;
+      padding: 1rem;
+      border: 1px solid rgba(247, 242, 236, 0.06);
+      animation: fadeUp 0.5s ease-out backwards;
+    }
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+    .stat-card:nth-child(4) { animation-delay: 0.2s; }
+    .stat-card:nth-child(5) { animation-delay: 0.25s; }
+    .stat-card:nth-child(6) { animation-delay: 0.3s; }
+    .stat-card .label { font-size: 0.75rem; color: rgba(247, 242, 236, 0.6); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; }
+    .stat-card .value { font-family: 'DM Mono', monospace; font-size: 1.5rem; font-weight: 500; }
+    .stat-card.strengths .value { color: #86efac; }
+    .stat-card.weaknesses .value { color: #fca5a5; }
+    .stat-card.opportunities .value { color: var(--warm); }
+    .stat-card.threats .value { color: #93c5fd; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* AI Panel */
+    .ai-panel {
+      background: linear-gradient(145deg, #1a1a18 0%, #252522 100%);
+      border-radius: 16px;
+      border: 1px solid rgba(247, 242, 236, 0.08);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .ai-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .ai-panel-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+    .claude-badge {
+      background: rgba(212, 168, 83, 0.2);
+      color: var(--warm);
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+    }
+    .ai-placeholder {
+      color: rgba(247, 242, 236, 0.5);
+      font-size: 0.95rem;
+      padding: 1rem 0;
+    }
+    .ai-loading {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: rgba(247, 242, 236, 0.8);
+      padding: 1rem 0;
+    }
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(247, 242, 236, 0.2);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .ai-content { display: none; }
+    .ai-content.visible { display: block; animation: fadeUp 0.4s ease-out; }
+    .ai-section {
+      margin-bottom: 1.25rem;
+    }
+    .ai-section h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: rgba(247, 242, 236, 0.6);
+      margin-bottom: 0.4rem;
+    }
+    .ai-section p, .ai-section ul {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: rgba(247, 242, 236, 0.9);
+    }
+    .ai-section ul { padding-left: 1.25rem; }
+    .ai-section li { margin-bottom: 0.35rem; }
+    .priority-actions .item { display: flex; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .priority-actions .num { font-family: 'DM Mono', monospace; color: var(--warm); min-width: 1.5rem; }
+
+    /* Two visual panels row */
+    .two-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 720px) { .two-panels { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: var(--panel-bg);
+      border-radius: 16px;
+      border: 1px solid rgba(247, 242, 236, 0.06);
+      padding: 1.25rem;
+    }
+    .panel h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .swot-quadrant-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .quadrant-mini {
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .quadrant-mini.s { background: rgba(26, 107, 60, 0.15); border: 1px solid rgba(26, 107, 60, 0.3); }
+    .quadrant-mini.w { background: rgba(232, 52, 42, 0.1); border: 1px solid rgba(232, 52, 42, 0.25); }
+    .quadrant-mini.o { background: rgba(212, 168, 83, 0.12); border: 1px solid rgba(212, 168, 83, 0.3); }
+    .quadrant-mini.t { background: rgba(59, 91, 154, 0.15); border: 1px solid rgba(59, 91, 154, 0.3); }
+    .quadrant-mini .label { font-size: 0.75rem; color: rgba(247, 242, 236, 0.6); margin-bottom: 0.25rem; }
+    .quadrant-mini .count { font-family: 'DM Mono', monospace; font-size: 1.5rem; font-weight: 500; }
+    .quadrant-mini.s .count { color: #86efac; }
+    .quadrant-mini.w .count { color: #fca5a5; }
+    .quadrant-mini.o .count { color: var(--warm); }
+    .quadrant-mini.t .count { color: #93c5fd; }
+
+    .dept-bars { display: flex; flex-direction: column; gap: 0.6rem; }
+    .dept-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .dept-row .name { flex: 0 0 140px; font-size: 0.85rem; }
+    .dept-row .bar-wrap { flex: 1; height: 24px; background: rgba(255,255,255,0.06); border-radius: 6px; overflow: hidden; }
+    .dept-row .bar { height: 100%; border-radius: 6px; background: var(--green); transition: width 0.3s; }
+    .dept-row .val { font-family: 'DM Mono', monospace; font-size: 0.85rem; min-width: 2rem; text-align: right; }
+
+    /* Theme panels */
+    .theme-panels {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 1024px) { .theme-panels { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px)  { .theme-panels { grid-template-columns: 1fr; } }
+
+    .theme-panel {
+      background: var(--panel-bg);
+      border-radius: 16px;
+      border: 1px solid rgba(247, 242, 236, 0.06);
+      padding: 1.25rem;
+    }
+    .theme-panel h3 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem; }
+    .theme-panel.s h3 { color: #86efac; }
+    .theme-panel.w h3 { color: #fca5a5; }
+    .theme-panel.o h3 { color: var(--warm); }
+    .theme-panel.t h3 { color: #93c5fd; }
+    .theme-list { list-style: none; }
+    .theme-list li {
+      font-size: 0.85rem;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid rgba(247, 242, 236, 0.06);
+      color: rgba(247, 242, 236, 0.85);
+    }
+    .theme-list li:last-child { border-bottom: none; }
+    .theme-list .empty { color: rgba(247, 242, 236, 0.4); font-style: italic; }
+
+    /* Table */
+    .table-wrap {
+      background: var(--panel-bg);
+      border-radius: 16px;
+      border: 1px solid rgba(247, 242, 236, 0.06);
+      overflow: hidden;
+    }
+    .table-wrap h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 1.25rem 1.25rem 0.5rem;
+    }
+    .table-scroll { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid rgba(247, 242, 236, 0.06); }
+    th { color: rgba(247, 242, 236, 0.6); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    tr:hover { background: rgba(255, 255, 255, 0.03); }
+    .chip { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-family: 'DM Mono', monospace; margin-right: 0.25rem; }
+    .chip.s { background: rgba(26, 107, 60, 0.25); color: #86efac; }
+    .chip.w { background: rgba(232, 52, 42, 0.2); color: #fca5a5; }
+    .chip.o { background: rgba(212, 168, 83, 0.2); color: var(--warm); }
+    .chip.t { background: rgba(59, 91, 154, 0.2); color: #93c5fd; }
+    .empty-state {
+      padding: 3rem;
+      text-align: center;
+      color: rgba(247, 242, 236, 0.4);
+      font-size: 0.95rem;
+    }
+
+    .dashboard-section {
+      scroll-margin-top: 5rem;
+    }
+    .export-panel, .share-panel {
+      background: var(--panel-bg);
+      border-radius: 16px;
+      border: 1px solid rgba(247, 242, 236, 0.06);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .export-panel h3, .share-panel h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .share-panel .link-box {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .share-panel input {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.65rem 1rem;
+      border-radius: 10px;
+      border: 1px solid rgba(247, 242, 236, 0.15);
+      background: rgba(255,255,255,0.05);
+      color: var(--cream);
+      font-size: 0.9rem;
+    }
+    .btn-copy {
+      background: var(--green);
+      color: white;
+      padding: 0.65rem 1.25rem;
+      border-radius: 10px;
+      border: none;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-copy:hover { opacity: 0.9; }
+    .btn-export {
+      background: linear-gradient(135deg, var(--green), var(--blue));
+      color: white;
+      padding: 0.65rem 1.25rem;
+      border-radius: 10px;
+      border: none;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-export:hover { opacity: 0.9; }
+
+    .btn-view {
+      background: rgba(247, 242, 236, 0.12);
+      color: var(--cream);
+      border: 1px solid rgba(247, 242, 236, 0.2);
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-view:hover { background: rgba(247, 242, 236, 0.2); }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .modal-overlay.visible { display: flex; }
+    .modal {
+      background: var(--panel-bg);
+      border-radius: 16px;
+      border: 1px solid rgba(247, 242, 236, 0.1);
+      max-width: 520px;
+      width: 100%;
+      max-height: 85vh;
+      overflow: auto;
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid rgba(247, 242, 236, 0.08);
+    }
+    .modal-header h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; }
+    .modal-close {
+      background: none;
+      border: none;
+      color: rgba(247, 242, 236, 0.6);
+      font-size: 1.5rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0.25rem;
+    }
+    .modal-close:hover { color: var(--cream); }
+    .modal-body { padding: 1.25rem 1.5rem; }
+    .modal-body .row { margin-bottom: 1rem; }
+    .modal-body .label { font-size: 0.75rem; color: rgba(247,242,236,0.5); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+    .modal-body .value { font-size: 0.95rem; }
+    .modal-body ul { margin: 0; padding-left: 1.25rem; }
+    .modal-body ul li { margin-bottom: 0.35rem; }
+    .modal-body .swot-block { margin-bottom: 1rem; }
+    .modal-body .swot-block .label { color: inherit; }
+    .modal-body .swot-s { color: #86efac; }
+    .modal-body .swot-w { color: #fca5a5; }
+    .modal-body .swot-o { color: var(--warm); }
+    .modal-body .swot-t { color: #93c5fd; }
+
+    /* Mobile: hamburger and sidebar overlay */
+    .menu-toggle {
+      display: none;
+      background: rgba(247, 242, 236, 0.1);
+      border: 1px solid rgba(247, 242, 236, 0.2);
+      color: var(--cream);
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      padding: 0;
+    }
+    .menu-toggle:hover { background: rgba(247, 242, 236, 0.15); }
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 90;
+    }
+    .sidebar-overlay.visible { display: block; }
+
+    @media (max-width: 768px) {
+      .menu-toggle { display: flex; }
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 260px;
+        max-width: 85vw;
+        z-index: 100;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.3);
+      }
+      body.sidebar-open .sidebar { transform: translateX(0); }
+      body.sidebar-open .sidebar-overlay { display: block; }
+      .main-content { min-width: 0; }
+      .content { padding: 1rem; }
+      .topbar { padding: 0.75rem 1rem; }
+      .topbar-title { font-size: 1rem; }
+      .topbar-actions { flex-wrap: wrap; }
+      .topbar-actions .btn { padding: 0.45rem 0.75rem; font-size: 0.85rem; }
+      .stats-strip { gap: 0.75rem; margin-bottom: 1rem; }
+      .stat-card { padding: 0.75rem; }
+      .stat-card .value { font-size: 1.25rem; }
+      .stat-card .label { font-size: 0.7rem; }
+      .two-panels { gap: 1rem; margin-bottom: 1rem; }
+      .panel { padding: 1rem; }
+      .panel h3 { font-size: 0.95rem; }
+      .dept-row .name { flex: 0 0 100px; font-size: 0.8rem; }
+      .theme-panels { gap: 0.75rem; margin-bottom: 1rem; }
+      .theme-panel { padding: 1rem; }
+      .theme-panel h3 { font-size: 0.8rem; }
+      .table-wrap h3 { padding: 1rem 1rem 0.5rem; }
+      th, td { padding: 0.5rem 0.75rem; font-size: 0.85rem; }
+      .table-scroll { -webkit-overflow-scrolling: touch; }
+      table { min-width: 500px; }
+      .export-panel, .share-panel { padding: 1rem; }
+      .share-panel input { min-width: 0; width: 100%; }
+      .share-panel .link-box { flex-direction: column; align-items: stretch; }
+      .btn-copy, .btn-export { width: 100%; }
+      .ai-panel { padding: 1rem; }
+      .ai-panel-header h2 { font-size: 1rem; }
+      .dashboard-section { scroll-margin-top: 4rem; }
+      .modal { max-width: 100%; margin: 0 1rem; max-height: 90vh; }
+      .modal-body { padding: 1rem; }
+    }
+
+    @media (max-width: 480px) {
+      .stats-strip { grid-template-columns: 1fr; }
+      .topbar-title { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span>G</span></div>
+    <nav>
+      <a href="#overview" class="nav-link active" data-section="overview">Overview</a>
+      <a href="#ai-insights" class="nav-link" data-section="ai-insights">AI Insights</a>
+      <a href="#submissions" class="nav-link" data-section="submissions">Submissions</a>
+      <a href="#export" class="nav-link" data-section="export">Export</a>
+      <a href="#share" class="nav-link" data-section="share">Share</a>
+    </nav>
+    <span class="sidebar-badge">Admin</span>
+    <button type="button" class="sidebar-signout" id="btn-signout">Sign out</button>
+    <div class="sidebar-footer">GoodFood Canada · SWOT 2026</div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <button type="button" class="menu-toggle" id="menu-toggle" aria-label="Open menu">
+        <span aria-hidden="true">☰</span>
+      </button>
+      <h1 class="topbar-title">SWOT Intelligence Dashboard</h1>
+      <div class="topbar-actions">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span class="live-label" style="font-size:0.85rem;color:rgba(247,242,236,0.7)">Live</span>
+        <button type="button" class="btn btn-refresh" id="btn-refresh">Refresh</button>
+        <button type="button" class="btn btn-ai" id="btn-ai">AI Analysis</button>
+        <button type="button" class="btn btn-clear" id="btn-clear">Clear All</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="dashboard-section" id="overview">
+      <div class="stats-strip">
+        <div class="stat-card">
+          <div class="label">Total Submissions</div>
+          <div class="value" id="stat-submissions">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Total Entries</div>
+          <div class="value" id="stat-entries">0</div>
+        </div>
+        <div class="stat-card strengths">
+          <div class="label">Strengths</div>
+          <div class="value" id="stat-strengths">0</div>
+        </div>
+        <div class="stat-card weaknesses">
+          <div class="label">Weaknesses</div>
+          <div class="value" id="stat-weaknesses">0</div>
+        </div>
+        <div class="stat-card opportunities">
+          <div class="label">Opportunities</div>
+          <div class="value" id="stat-opportunities">0</div>
+        </div>
+        <div class="stat-card threats">
+          <div class="label">Threats</div>
+          <div class="value" id="stat-threats">0</div>
+        </div>
+      </div>
+
+      <div class="two-panels">
+        <div class="panel">
+          <h3>SWOT Quadrant Overview</h3>
+          <div class="swot-quadrant-grid">
+            <div class="quadrant-mini s"><div class="label">Strengths</div><div class="count" id="quad-s">0</div></div>
+            <div class="quadrant-mini w"><div class="label">Weaknesses</div><div class="count" id="quad-w">0</div></div>
+            <div class="quadrant-mini o"><div class="label">Opportunities</div><div class="count" id="quad-o">0</div></div>
+            <div class="quadrant-mini t"><div class="label">Threats</div><div class="count" id="quad-t">0</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Participation by Department</h3>
+          <div class="dept-bars" id="dept-bars"></div>
+        </div>
+      </div>
+
+      <div class="theme-panels">
+        <div class="theme-panel s">
+          <h3>Top Strengths Mentioned</h3>
+          <ul class="theme-list" id="list-strengths"></ul>
+        </div>
+        <div class="theme-panel w">
+          <h3>Top Weaknesses Mentioned</h3>
+          <ul class="theme-list" id="list-weaknesses"></ul>
+        </div>
+        <div class="theme-panel o">
+          <h3>Top Opportunities Mentioned</h3>
+          <ul class="theme-list" id="list-opportunities"></ul>
+        </div>
+        <div class="theme-panel t">
+          <h3>Top Threats Mentioned</h3>
+          <ul class="theme-list" id="list-threats"></ul>
+        </div>
+      </div>
+      </section>
+
+      <section class="dashboard-section ai-panel" id="ai-insights">
+        <div class="ai-panel-header">
+          <h2>Strategic AI Analysis</h2>
+          <span class="claude-badge">OpenAI</span>
+        </div>
+        <div class="ai-placeholder" id="ai-placeholder">Click <strong>AI Analysis</strong> above to generate strategic insights from all submissions.</div>
+        <div class="ai-loading" id="ai-loading" style="display:none;">
+          <div class="spinner"></div>
+          <span id="ai-loading-text">Analyzing submissions...</span>
+        </div>
+        <div class="ai-content" id="ai-content">
+          <div class="ai-section" id="ai-executive">
+            <h3>Executive Summary</h3>
+            <p id="ai-executive-text"></p>
+          </div>
+          <div class="ai-section" id="ai-strengths">
+            <h3>Strengths Synthesis</h3>
+            <p id="ai-strengths-text"></p>
+          </div>
+          <div class="ai-section" id="ai-weaknesses">
+            <h3>Weaknesses Synthesis</h3>
+            <p id="ai-weaknesses-text"></p>
+          </div>
+          <div class="ai-section" id="ai-opportunities">
+            <h3>Opportunities Synthesis</h3>
+            <p id="ai-opportunities-text"></p>
+          </div>
+          <div class="ai-section" id="ai-threats">
+            <h3>Threats Synthesis</h3>
+            <p id="ai-threats-text"></p>
+          </div>
+          <div class="ai-section" id="ai-position">
+            <h3>Strategic Position Assessment</h3>
+            <p id="ai-position-text"></p>
+          </div>
+          <div class="ai-section priority-actions" id="ai-actions">
+            <h3>5 Priority Actions</h3>
+            <ol id="ai-actions-list"></ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="dashboard-section" id="submissions">
+      <div class="table-wrap">
+        <h3>Submissions</h3>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Department</th>
+                <th>Tenure</th>
+                <th>SWOT</th>
+                <th>Submitted</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="submissions-tbody"></tbody>
+          </table>
+        </div>
+        <div class="empty-state" id="table-empty" style="display:none;">No submissions yet. Share the employee portal to collect input.</div>
+      </div>
+      </section>
+
+      <section class="dashboard-section" id="export">
+        <div class="export-panel">
+          <h3>Export</h3>
+          <p style="margin-bottom:1rem;color:rgba(247,242,236,0.7);font-size:0.9rem;">Download all submissions as a CSV file for use in spreadsheets or reporting.</p>
+          <button type="button" class="btn-export" id="btn-export-csv">Download CSV</button>
+        </div>
+      </section>
+
+      <section class="dashboard-section" id="share">
+        <div class="share-panel">
+          <h3>Share</h3>
+          <p style="margin-bottom:1rem;color:rgba(247,242,236,0.7);font-size:0.9rem;">Share the employee input portal link with your team.</p>
+          <div class="link-box">
+            <input type="text" id="share-link-input" readonly value="">
+            <button type="button" class="btn-copy" id="btn-copy-link">Copy link</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="submission-modal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-labelledby="modal-title">
+      <div class="modal-header">
+        <h3 id="modal-title">Submission details</h3>
+        <button type="button" class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <script>
+    let submissions = [];
+    let refreshTimer = null;
+    const REFRESH_INTERVAL_MS = 30000;
+    const fetchOpts = { credentials: 'include' };
+
+    (async function checkAuth() {
+      const res = await fetch('/api/admin/me', fetchOpts);
+      if (!res.ok) {
+        window.location.href = '/admin/login';
+        return;
+      }
+      init();
+    })();
+
+    function init() {
+    const statSubmissions = document.getElementById('stat-submissions');
+    const statEntries = document.getElementById('stat-entries');
+    const statStrengths = document.getElementById('stat-strengths');
+    const statWeaknesses = document.getElementById('stat-weaknesses');
+    const statOpportunities = document.getElementById('stat-opportunities');
+    const statThreats = document.getElementById('stat-threats');
+    const quadS = document.getElementById('quad-s');
+    const quadW = document.getElementById('quad-w');
+    const quadO = document.getElementById('quad-o');
+    const quadT = document.getElementById('quad-t');
+    const deptBars = document.getElementById('dept-bars');
+    const listStrengths = document.getElementById('list-strengths');
+    const listWeaknesses = document.getElementById('list-weaknesses');
+    const listOpportunities = document.getElementById('list-opportunities');
+    const listThreats = document.getElementById('list-threats');
+    const submissionsTbody = document.getElementById('submissions-tbody');
+    const tableEmpty = document.getElementById('table-empty');
+    const aiPlaceholder = document.getElementById('ai-placeholder');
+    const aiLoading = document.getElementById('ai-loading');
+    const aiLoadingText = document.getElementById('ai-loading-text');
+    const aiContent = document.getElementById('ai-content');
+    const btnRefresh = document.getElementById('btn-refresh');
+    const btnAi = document.getElementById('btn-ai');
+    const btnClear = document.getElementById('btn-clear');
+
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    const modal = document.getElementById('submission-modal');
+    const modalBody = document.getElementById('modal-body');
+    const modalClose = document.getElementById('modal-close');
+    function openSubmissionModal(sub) {
+      const strengths = sub.strengths || [];
+      const weaknesses = sub.weaknesses || [];
+      const opportunities = sub.opportunities || [];
+      const threats = sub.threats || [];
+      modalBody.innerHTML = `
+        <div class="row"><div class="label">Employee</div><div class="value"><strong>${escapeHtml(sub.name)}</strong><br>${escapeHtml(sub.email)}</div></div>
+        <div class="row"><div class="label">Department</div><div class="value">${escapeHtml(sub.dept || '—')}</div></div>
+        <div class="row"><div class="label">Tenure</div><div class="value">${escapeHtml(sub.tenure || '—')}</div></div>
+        <div class="row"><div class="label">Submitted</div><div class="value">${formatDate(sub.timestamp)}</div></div>
+        <div class="swot-block"><div class="label swot-s">Strengths</div><div class="value">${strengths.length ? '<ul>' + strengths.map(x => '<li>' + escapeHtml(x) + '</li>').join('') + '</ul>' : '—'}</div></div>
+        <div class="swot-block"><div class="label swot-w">Weaknesses</div><div class="value">${weaknesses.length ? '<ul>' + weaknesses.map(x => '<li>' + escapeHtml(x) + '</li>').join('') + '</ul>' : '—'}</div></div>
+        <div class="swot-block"><div class="label swot-o">Opportunities</div><div class="value">${opportunities.length ? '<ul>' + opportunities.map(x => '<li>' + escapeHtml(x) + '</li>').join('') + '</ul>' : '—'}</div></div>
+        <div class="swot-block"><div class="label swot-t">Threats</div><div class="value">${threats.length ? '<ul>' + threats.map(x => '<li>' + escapeHtml(x) + '</li>').join('') + '</ul>' : '—'}</div></div>
+        ${(sub.comments || '').trim() ? '<div class="row"><div class="label">Comments</div><div class="value">' + escapeHtml(sub.comments) + '</div></div>' : ''}
+      `;
+      modal.classList.add('visible');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+    function closeSubmissionModal() {
+      modal.classList.remove('visible');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+    modalClose.addEventListener('click', closeSubmissionModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeSubmissionModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('visible')) closeSubmissionModal(); });
+
+    async function refreshData() {
+      try {
+        const res = await fetch('/api/submissions', fetchOpts);
+        if (res.status === 401) {
+          window.location.href = '/admin/login';
+          return;
+        }
+        const json = await res.json();
+        if (json.success) {
+          submissions = json.data || [];
+          render();
+        }
+      } catch (err) {
+        console.error('Failed to fetch submissions', err);
+      }
+    }
+
+    function aggregate() {
+      const allS = [], allW = [], allO = [], allT = [];
+      submissions.forEach(sub => {
+        (sub.strengths || []).forEach(s => allS.push(s));
+        (sub.weaknesses || []).forEach(w => allW.push(w));
+        (sub.opportunities || []).forEach(o => allO.push(o));
+        (sub.threats || []).forEach(t => allT.push(t));
+      });
+      const totalEntries = allS.length + allW.length + allO.length + allT.length;
+      const byDept = {};
+      submissions.forEach(sub => {
+        const d = sub.dept || 'Not specified';
+        byDept[d] = (byDept[d] || 0) + 1;
+      });
+      const maxDept = Math.max(1, ...Object.values(byDept));
+      return { allS, allW, allO, allT, totalEntries, byDept, maxDept };
+    }
+
+    function render() {
+      const { allS, allW, allO, allT, totalEntries, byDept, maxDept } = aggregate();
+
+      statSubmissions.textContent = submissions.length;
+      statEntries.textContent = totalEntries;
+      statStrengths.textContent = allS.length;
+      statWeaknesses.textContent = allW.length;
+      statOpportunities.textContent = allO.length;
+      statThreats.textContent = allT.length;
+
+      quadS.textContent = allS.length;
+      quadW.textContent = allW.length;
+      quadO.textContent = allO.length;
+      quadT.textContent = allT.length;
+
+      deptBars.innerHTML = Object.entries(byDept)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, count]) => `
+          <div class="dept-row">
+            <span class="name">${escapeHtml(name)}</span>
+            <div class="bar-wrap"><div class="bar" style="width:${(count / maxDept) * 100}%"></div></div>
+            <span class="val">${count}</span>
+          </div>
+        `).join('') || '<div class="dept-row"><span class="name">No data</span><span class="val">0</span></div>';
+
+      const take = (arr, n = 8) => arr.slice(-n).reverse();
+      function renderList(id, items) {
+        const el = document.getElementById(id);
+        if (!items.length) {
+          el.innerHTML = '<li class="empty">No entries yet</li>';
+          return;
+        }
+        el.innerHTML = take(items).map(s => `<li>${escapeHtml(s)}</li>`).join('');
+      }
+      renderList('list-strengths', allS);
+      renderList('list-weaknesses', allW);
+      renderList('list-opportunities', allO);
+      renderList('list-threats', allT);
+
+      const sorted = [...submissions].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      if (sorted.length === 0) {
+        submissionsTbody.innerHTML = '';
+        tableEmpty.style.display = 'block';
+      } else {
+        tableEmpty.style.display = 'none';
+        submissionsTbody.innerHTML = sorted.map(sub => {
+          const s = (sub.strengths || []).length;
+          const w = (sub.weaknesses || []).length;
+          const o = (sub.opportunities || []).length;
+          const t = (sub.threats || []).length;
+          return `<tr>
+            <td><strong>${escapeHtml(sub.name)}</strong><br><span style="font-size:0.85rem;color:rgba(247,242,236,0.6)">${escapeHtml(sub.email)}</span></td>
+            <td>${escapeHtml(sub.dept || '—')}</td>
+            <td>${escapeHtml(sub.tenure || '—')}</td>
+            <td><span class="chip s">${s}</span><span class="chip w">${w}</span><span class="chip o">${o}</span><span class="chip t">${t}</span></td>
+            <td>${formatDate(sub.timestamp)}</td>
+            <td><button type="button" class="btn-view" data-id="${escapeHtml(sub.id)}">View</button></td>
+          </tr>`;
+        }).join('');
+        submissionsTbody.querySelectorAll('.btn-view').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const sub = submissions.find(s => s.id === btn.getAttribute('data-id'));
+            if (sub) openSubmissionModal(sub);
+          });
+        });
+      }
+    }
+
+    function showAiState(place, load, content) {
+      aiPlaceholder.style.display = place ? 'block' : 'none';
+      aiLoading.style.display = load ? 'flex' : 'none';
+      aiContent.classList.toggle('visible', content);
+    }
+
+    async function runAIAnalysis() {
+      const { allS, allW, allO, allT } = aggregate();
+      const total = submissions.length;
+      if (total === 0) {
+        alert('No submissions to analyze. Add submissions from the employee form first.');
+        return;
+      }
+
+      btnAi.disabled = true;
+      showAiState(false, true, false);
+      aiLoadingText.textContent = `Analyzing ${total} submission(s)...`;
+
+      const prompt = `You are a senior business strategist analyzing employee SWOT submissions for GoodFood Canada, a meal kit and grocery delivery company.
+
+STRENGTHS (${allS.length} items):
+${allS.map((s, i) => `${i + 1}. ${s}`).join('\n')}
+
+WEAKNESSES (${allW.length} items):
+${allW.map((w, i) => `${i + 1}. ${w}`).join('\n')}
+
+OPPORTUNITIES (${allO.length} items):
+${allO.map((o, i) => `${i + 1}. ${o}`).join('\n')}
+
+THREATS (${allT.length} items):
+${allT.map((t, i) => `${i + 1}. ${t}`).join('\n')}
+
+Provide a strategic analysis in this EXACT JSON structure (no markdown, no code fences):
+{
+  "executive_summary": "2-3 sentence overview of the strategic picture.",
+  "strengths_synthesis": "Synthesis of strengths themes and implications.",
+  "weaknesses_synthesis": "Synthesis of weaknesses and recommended focus areas.",
+  "opportunities_synthesis": "Synthesis of opportunities and how to capture them.",
+  "threats_synthesis": "Synthesis of threats and mitigation ideas.",
+  "strategic_position": "Overall strategic position assessment.",
+  "priority_actions": [
+    {"number": "01", "action": "First priority action"},
+    {"number": "02", "action": "Second priority action"},
+    {"number": "03", "action": "Third priority action"},
+    {"number": "04", "action": "Fourth priority action"},
+    {"number": "05", "action": "Fifth priority action"}
+  ]
+}`;
+
+      try {
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ prompt }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'API request failed');
+        }
+
+        const text = data.data?.text || '';
+        let parsed = null;
+        try {
+          const cleaned = text.replace(/```json?\s*|\s*```/g, '').trim();
+          parsed = JSON.parse(cleaned);
+        } catch (e) {
+          parsed = { executive_summary: text };
+        }
+
+        document.getElementById('ai-executive-text').textContent = parsed.executive_summary || '—';
+        document.getElementById('ai-strengths-text').textContent = parsed.strengths_synthesis || '—';
+        document.getElementById('ai-weaknesses-text').textContent = parsed.weaknesses_synthesis || '—';
+        document.getElementById('ai-opportunities-text').textContent = parsed.opportunities_synthesis || '—';
+        document.getElementById('ai-threats-text').textContent = parsed.threats_synthesis || '—';
+        document.getElementById('ai-position-text').textContent = parsed.strategic_position || '—';
+
+        const actionsList = document.getElementById('ai-actions-list');
+        const actions = parsed.priority_actions || [];
+        actionsList.innerHTML = actions.map(
+          (a) => `<li class="item"><span class="num">${escapeHtml(String(a.number || ''))}</span><span>${escapeHtml(a.action || '')}</span></li>`
+        ).join('');
+
+        showAiState(false, false, true);
+      } catch (err) {
+        console.error(err);
+        showAiState(true, false, false);
+        let msg = err.message || 'Try again.';
+        msg = msg.replace(/ANTHROPIC_API_KEY/gi, 'OPENAI_API_KEY').replace(/Anthropic/gi, 'OpenAI');
+        aiPlaceholder.textContent = 'AI analysis failed: ' + msg;
+      } finally {
+        btnAi.disabled = false;
+      }
+    }
+
+    async function clearAllData() {
+      if (!confirm('Clear all submissions? This cannot be undone.')) return;
+      try {
+        await fetch('/api/submissions', { method: 'DELETE', credentials: 'include' });
+        await refreshData();
+        showAiState(true, false, false);
+        aiPlaceholder.textContent = 'Click AI Analysis above to generate strategic insights from all submissions.';
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    btnRefresh.addEventListener('click', () => refreshData());
+    btnAi.addEventListener('click', runAIAnalysis);
+    btnClear.addEventListener('click', clearAllData);
+
+    // Mobile: toggle sidebar
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    function openSidebar() {
+      document.body.classList.add('sidebar-open');
+      sidebarOverlay.classList.add('visible');
+      sidebarOverlay.setAttribute('aria-hidden', 'false');
+      menuToggle.setAttribute('aria-label', 'Close menu');
+      menuToggle.querySelector('span').textContent = '✕';
+    }
+    function closeSidebar() {
+      document.body.classList.remove('sidebar-open');
+      sidebarOverlay.classList.remove('visible');
+      sidebarOverlay.setAttribute('aria-hidden', 'true');
+      menuToggle.setAttribute('aria-label', 'Open menu');
+      menuToggle.querySelector('span').textContent = '☰';
+    }
+    menuToggle.addEventListener('click', () => {
+      if (document.body.classList.contains('sidebar-open')) closeSidebar();
+      else openSidebar();
+    });
+    sidebarOverlay.addEventListener('click', closeSidebar);
+    document.querySelectorAll('.sidebar nav a').forEach(el => {
+      el.addEventListener('click', () => { closeSidebar(); });
+    });
+    document.getElementById('btn-signout').addEventListener('click', async () => {
+      closeSidebar();
+      try {
+        await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' });
+      } catch (e) {}
+      window.location.href = '/admin/login';
+    });
+
+    // Sidebar: scroll to section and set active
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const id = link.getAttribute('data-section') || link.getAttribute('href').slice(1);
+        const el = document.getElementById(id);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+          link.classList.add('active');
+        }
+      });
+    });
+
+    // Share link
+    const shareLinkInput = document.getElementById('share-link-input');
+    const btnCopyLink = document.getElementById('btn-copy-link');
+    shareLinkInput.value = window.location.origin + '/';
+    btnCopyLink.addEventListener('click', () => {
+      shareLinkInput.select();
+      document.execCommand('copy');
+      const t = btnCopyLink.textContent;
+      btnCopyLink.textContent = 'Copied!';
+      setTimeout(() => { btnCopyLink.textContent = t; }, 2000);
+    });
+
+    // Export CSV
+    document.getElementById('btn-export-csv').addEventListener('click', () => {
+      const rows = [
+        ['Name', 'Email', 'Department', 'Tenure', 'Strengths', 'Weaknesses', 'Opportunities', 'Threats', 'Comments', 'Submitted'],
+        ...submissions.map(sub => [
+          sub.name,
+          sub.email,
+          sub.dept || '',
+          sub.tenure || '',
+          (sub.strengths || []).join('; '),
+          (sub.weaknesses || []).join('; '),
+          (sub.opportunities || []).join('; '),
+          (sub.threats || []).join('; '),
+          (sub.comments || '').replace(/\n/g, ' '),
+          sub.timestamp || '',
+        ]),
+      ];
+      const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'goodfood-swot-submissions.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    refreshData();
+    refreshTimer = setInterval(refreshData, REFRESH_INTERVAL_MS);
+    } // end init()
+  </script>
+</body>
+</html>

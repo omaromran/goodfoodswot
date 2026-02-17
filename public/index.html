@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoodFood Canada — Good Food | Employee Input</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red:      #E8342A;
+      --green:    #1A6B3C;
+      --cream:    #F7F2EC;
+      --charcoal: #1C1C1A;
+      --warm:     #D4A853;
+      --blue:     #3B5B9A;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--charcoal);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--charcoal);
+      color: var(--cream);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .header-logo {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--green), var(--warm));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1rem;
+    }
+    .header-tagline {
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    .header-badge {
+      background: var(--green);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+    }
+
+    /* Main */
+    .main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.6s ease-out;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: var(--charcoal);
+      color: var(--cream);
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      margin-bottom: 0.5rem;
+      color: var(--charcoal);
+    }
+    .hero p {
+      font-size: 1rem;
+      color: #555;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* Cards */
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(28, 28, 26, 0.06);
+      border: 1.5px solid rgba(28, 28, 26, 0.08);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s ease-out backwards;
+    }
+    .card:nth-child(1) { animation-delay: 0.05s; }
+    .card:nth-child(2) { animation-delay: 0.1s; }
+    .card:nth-child(3) { animation-delay: 0.15s; }
+    .card:nth-child(4) { animation-delay: 0.2s; }
+    .card:nth-child(5) { animation-delay: 0.25s; }
+    .card:nth-child(6) { animation-delay: 0.3s; }
+    .card:nth-child(7) { animation-delay: 0.35s; }
+    .card:nth-child(8) { animation-delay: 0.4s; }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 1.15rem;
+      margin-bottom: 1rem;
+      color: var(--charcoal);
+    }
+
+    /* Form */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-group {
+      margin-bottom: 0;
+    }
+    .form-group.full { grid-column: 1 / -1; }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 0.35rem;
+      color: var(--charcoal);
+    }
+    label .required { color: var(--red); }
+    input[type="text"],
+    input[type="email"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border: 1.5px solid rgba(28, 28, 26, 0.15);
+      border-radius: 10px;
+      background: var(--cream);
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(26, 107, 60, 0.15);
+    }
+    input.error,
+    select.error,
+    textarea.error {
+      border-color: var(--red);
+    }
+
+    /* SWOT Grid */
+    .swot-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    @media (max-width: 720px) {
+      .swot-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+
+    .swot-card {
+      border-radius: 16px;
+      padding: 1.25rem;
+      border: 1.5px solid;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+    }
+    .swot-card.strengths {
+      background: rgba(26, 107, 60, 0.06);
+      border-color: rgba(26, 107, 60, 0.3);
+    }
+    .swot-card.weaknesses {
+      background: rgba(232, 52, 42, 0.06);
+      border-color: rgba(232, 52, 42, 0.3);
+    }
+    .swot-card.opportunities {
+      background: rgba(212, 168, 83, 0.08);
+      border-color: rgba(212, 168, 83, 0.4);
+    }
+    .swot-card.threats {
+      background: rgba(59, 91, 154, 0.06);
+      border-color: rgba(59, 91, 154, 0.3);
+    }
+
+    .swot-badge {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: 0.95rem;
+      text-align: center;
+      line-height: 28px;
+      margin-bottom: 0.5rem;
+      color: white;
+    }
+    .swot-card.strengths .swot-badge { background: var(--green); }
+    .swot-card.weaknesses .swot-badge { background: var(--red); }
+    .swot-card.opportunities .swot-badge { background: var(--warm); color: var(--charcoal); }
+    .swot-card.threats .swot-badge { background: var(--blue); }
+
+    .swot-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+    .swot-card .swot-desc {
+      font-size: 0.8rem;
+      color: #666;
+      margin-bottom: 0.75rem;
+    }
+    .swot-entries {
+      list-style: none;
+      margin-bottom: 0.75rem;
+      flex: 1;
+      min-height: 0;
+    }
+    .swot-entries li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.35rem 0.5rem;
+      background: rgba(255,255,255,0.7);
+      border-radius: 8px;
+      margin-bottom: 0.35rem;
+      font-size: 0.9rem;
+    }
+    .swot-entries .remove-btn {
+      background: none;
+      border: none;
+      color: #999;
+      cursor: pointer;
+      padding: 0.2rem;
+      font-size: 1rem;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+    .swot-entries .remove-btn:hover { color: var(--red); }
+
+    .swot-add {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: auto;
+    }
+    .swot-add input {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.9rem;
+    }
+    .swot-add button {
+      padding: 0.5rem 0.9rem;
+      border-radius: 10px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      white-space: nowrap;
+    }
+    .swot-card.strengths .swot-add button { background: var(--green); color: white; }
+    .swot-card.weaknesses .swot-add button { background: var(--red); color: white; }
+    .swot-card.opportunities .swot-add button { background: var(--warm); color: var(--charcoal); }
+    .swot-card.threats .swot-add button { background: var(--blue); color: white; }
+    .swot-add button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+    /* Comments */
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .char-count {
+      font-size: 0.8rem;
+      color: #888;
+      text-align: right;
+      margin-top: 0.35rem;
+    }
+    .char-count.at-limit { color: var(--red); }
+
+    /* Submit */
+    .submit-section {
+      text-align: center;
+      padding: 2rem 0;
+    }
+    .privacy-note {
+      font-size: 0.85rem;
+      color: #666;
+      margin-bottom: 1.25rem;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .btn-submit {
+      background: var(--green);
+      color: white;
+      border: none;
+      padding: 0.9rem 2.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(26, 107, 60, 0.35);
+    }
+    .btn-submit:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      pointer-events: none;
+    }
+    .toast {
+      padding: 0.85rem 1.5rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      animation: toastIn 0.3s ease-out;
+      pointer-events: auto;
+    }
+    .toast.success { background: var(--green); color: white; }
+    .toast.error { background: var(--red); color: white; }
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-brand">
+      <div class="header-logo">G</div>
+      <span class="header-tagline">Good Food</span>
+    </div>
+    <span class="header-badge">Employee Input Portal</span>
+  </header>
+
+  <main class="main">
+    <section class="hero">
+      <span class="hero-badge">SWOT Analysis 2026</span>
+      <h1>Share Your Perspective on Our Business</h1>
+      <p>Your input is confidential and valued. Help shape our strategy by sharing strengths, weaknesses, opportunities, and threats you see.</p>
+    </section>
+
+    <form id="swot-form" class="card" style="animation-delay: 0.05s;">
+      <h2 class="card-title">About You</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="name">Name <span class="required">*</span></label>
+          <input type="text" id="name" name="name" required placeholder="Your full name" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="email">Work Email <span class="required">*</span></label>
+          <input type="email" id="email" name="email" required placeholder="you@makegoodfood.ca" autocomplete="email">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="dept">Department</label>
+          <select id="dept" name="dept">
+            <option value="">Select department</option>
+            <option value="Operations">Operations</option>
+            <option value="Logistics">Logistics</option>
+            <option value="Customer Experience">Customer Experience</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Sales">Sales</option>
+            <option value="Product">Product</option>
+            <option value="Technology">Technology</option>
+            <option value="Finance">Finance</option>
+            <option value="HR">HR</option>
+            <option value="Procurement">Procurement</option>
+            <option value="Quality & Safety">Quality & Safety</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="tenure">Years at GoodFood</label>
+          <select id="tenure" name="tenure">
+            <option value="">Select tenure</option>
+            <option value="<1yr">Less than 1 year</option>
+            <option value="1-2">1–2 years</option>
+            <option value="3-5">3–5 years</option>
+            <option value="5-10">5–10 years</option>
+            <option value="10+">10+ years</option>
+          </select>
+        </div>
+      </div>
+    </form>
+
+    <div class="swot-grid">
+      <div class="card swot-card strengths">
+        <span class="swot-badge">S</span>
+        <h3>Strengths</h3>
+        <p class="swot-desc">What do we do well? Internal advantages.</p>
+        <ul class="swot-entries" data-quadrant="strengths"></ul>
+        <div class="swot-add">
+          <input type="text" data-quadrant="strengths" placeholder="Add strength" aria-label="Add strength">
+          <button type="button" data-quadrant="strengths">Add</button>
+        </div>
+      </div>
+      <div class="card swot-card weaknesses">
+        <span class="swot-badge">W</span>
+        <h3>Weaknesses</h3>
+        <p class="swot-desc">What could we improve? Internal gaps.</p>
+        <ul class="swot-entries" data-quadrant="weaknesses"></ul>
+        <div class="swot-add">
+          <input type="text" data-quadrant="weaknesses" placeholder="Add weakness" aria-label="Add weakness">
+          <button type="button" data-quadrant="weaknesses">Add</button>
+        </div>
+      </div>
+      <div class="card swot-card opportunities">
+        <span class="swot-badge">O</span>
+        <h3>Opportunities</h3>
+        <p class="swot-desc">External trends we can leverage.</p>
+        <ul class="swot-entries" data-quadrant="opportunities"></ul>
+        <div class="swot-add">
+          <input type="text" data-quadrant="opportunities" placeholder="Add opportunity" aria-label="Add opportunity">
+          <button type="button" data-quadrant="opportunities">Add</button>
+        </div>
+      </div>
+      <div class="card swot-card threats">
+        <span class="swot-badge">T</span>
+        <h3>Threats</h3>
+        <p class="swot-desc">External risks and challenges.</p>
+        <ul class="swot-entries" data-quadrant="threats"></ul>
+        <div class="swot-add">
+          <input type="text" data-quadrant="threats" placeholder="Add threat" aria-label="Add threat">
+          <button type="button" data-quadrant="threats">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Additional Comments</h2>
+      <div class="form-group full">
+        <label for="comments">Anything else you’d like to share (optional)</label>
+        <textarea id="comments" name="comments" maxlength="800" placeholder="Optional context or suggestions…"></textarea>
+        <p class="char-count" id="char-count">0 / 800</p>
+      </div>
+    </div>
+
+    <section class="submit-section">
+      <p class="privacy-note">Responses may be anonymized for reporting. Your perspective helps leadership make better decisions.</p>
+      <button type="submit" form="swot-form" class="btn-submit" id="btn-submit">Submit Your Input</button>
+    </section>
+  </main>
+
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <script>
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const MIN_SWOT_TOTAL = 2;
+
+    const form = document.getElementById('swot-form');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const commentsInput = document.getElementById('comments');
+    const charCountEl = document.getElementById('char-count');
+    const btnSubmit = document.getElementById('btn-submit');
+    const toastContainer = document.getElementById('toast-container');
+
+    const quadrants = ['strengths', 'weaknesses', 'opportunities', 'threats'];
+    const state = { strengths: [], weaknesses: [], opportunities: [], threats: [] };
+
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      toastContainer.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 4000);
+    }
+
+    function getQuadrantTotal() {
+      return quadrants.reduce((sum, q) => sum + state[q].length, 0);
+    }
+
+    function renderEntries(quadrant) {
+      const ul = document.querySelector(`.swot-entries[data-quadrant="${quadrant}"]`);
+      ul.innerHTML = state[quadrant].map((text, i) => `
+        <li>
+          <span>${escapeHtml(text)}</span>
+          <button type="button" class="remove-btn" data-quadrant="${quadrant}" data-i="${i}" aria-label="Remove">×</button>
+        </li>
+      `).join('');
+      ul.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const i = parseInt(btn.dataset.i, 10);
+          state[quadrant].splice(i, 1);
+          renderEntries(quadrant);
+        });
+      });
+    }
+
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    quadrants.forEach(q => {
+      const input = document.querySelector(`.swot-add input[data-quadrant="${q}"]`);
+      const addBtn = document.querySelector(`.swot-add button[data-quadrant="${q}"]`);
+      const addEntry = () => {
+        const val = (input.value || '').trim();
+        if (!val) return;
+        state[q].push(val);
+        input.value = '';
+        renderEntries(q);
+      };
+      addBtn.addEventListener('click', addEntry);
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addEntry();
+        }
+      });
+    });
+
+    document.querySelectorAll('.swot-entries').forEach(ul => {
+      ul.addEventListener('click', (e) => {
+        const btn = e.target.closest('.remove-btn');
+        if (!btn) return;
+        const q = btn.dataset.quadrant;
+        const i = parseInt(btn.dataset.i, 10);
+        state[q].splice(i, 1);
+        renderEntries(q);
+      });
+    });
+
+    commentsInput.addEventListener('input', () => {
+      const len = commentsInput.value.length;
+      charCountEl.textContent = `${len} / 800`;
+      charCountEl.classList.toggle('at-limit', len >= 800);
+    });
+
+    function validate() {
+      const name = (nameInput.value || '').trim();
+      const email = (emailInput.value || '').trim();
+      nameInput.classList.toggle('error', !name);
+      emailInput.classList.toggle('error', !email || !EMAIL_REGEX.test(email));
+      const total = getQuadrantTotal();
+      if (!name) {
+        showToast('Please enter your name.', 'error');
+        return false;
+      }
+      if (!email) {
+        showToast('Please enter your work email.', 'error');
+        return false;
+      }
+      if (!EMAIL_REGEX.test(email)) {
+        showToast('Please enter a valid email address.', 'error');
+        return false;
+      }
+      if (total < MIN_SWOT_TOTAL) {
+        showToast(`Please add at least ${MIN_SWOT_TOTAL} items across the SWOT quadrants.`, 'error');
+        return false;
+      }
+      return true;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!validate()) return;
+      btnSubmit.disabled = true;
+      try {
+        const res = await fetch('/api/submissions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: nameInput.value.trim(),
+            email: emailInput.value.trim(),
+            dept: document.getElementById('dept').value,
+            tenure: document.getElementById('tenure').value,
+            strengths: state.strengths,
+            weaknesses: state.weaknesses,
+            opportunities: state.opportunities,
+            threats: state.threats,
+            comments: commentsInput.value.trim(),
+          }),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          showToast('Submission failed. Please try again.', 'error');
+          return;
+        }
+        showToast('Thank you! Your input has been submitted.', 'success');
+        form.reset();
+        quadrants.forEach(q => {
+          state[q] = [];
+          renderEntries(q);
+        });
+        charCountEl.textContent = '0 / 800';
+        charCountEl.classList.remove('at-limit');
+      } catch (err) {
+        showToast('Network error. Please try again.', 'error');
+      } finally {
+        btnSubmit.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
