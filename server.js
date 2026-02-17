@@ -59,12 +59,13 @@ async function loadSubmissionsTurso() {
     await tursoClient.execute('CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)');
     const rs = await tursoClient.execute({ sql: "SELECT value FROM store WHERE key = 'submissions'", args: [] });
     const row = rs.rows[0];
-    if (row && row[0] != null) {
-      const data = JSON.parse(String(row[0]));
+    const raw = row != null ? (row.value ?? row[0] ?? row['value']) : null;
+    if (raw != null && raw !== '') {
+      const data = JSON.parse(String(raw));
       return Array.isArray(data) ? data : [];
     }
   } catch (err) {
-    console.warn('Turso load failed:', err.message);
+    console.error('Turso load failed:', err.message);
   }
   return [];
 }
@@ -81,12 +82,14 @@ function saveSubmissionsSync(arr) {
 async function saveSubmissionsTurso(arr) {
   if (!tursoClient) return;
   try {
+    const json = JSON.stringify(arr);
     await tursoClient.execute({
       sql: "INSERT OR REPLACE INTO store (key, value) VALUES ('submissions', ?)",
-      args: [JSON.stringify(arr)],
+      args: [json],
     });
+    console.log('Turso: saved', arr.length, 'submissions');
   } catch (err) {
-    console.error('Turso save failed:', err.message);
+    console.error('Turso save failed:', err.message, err);
   }
 }
 
@@ -234,14 +237,20 @@ app.get('/admin/login', (req, res) => {
 });
 
 (async function start() {
+  if (!USE_TURSO) {
+    console.warn('TURSO_DATABASE_URL and TURSO_AUTH_TOKEN not both set – using JSON file (data is lost on restart on Railway/Render)');
+  }
   if (USE_TURSO) {
-    submissions = await loadSubmissionsTurso();
-    console.log('Turso: loaded', submissions.length, 'submissions');
+    try {
+      submissions = await loadSubmissionsTurso();
+      console.log('Turso: loaded', submissions.length, 'submissions');
+    } catch (err) {
+      console.error('Turso load error:', err.message);
+    }
   }
   app.listen(PORT, () => {
     console.log(`GoodFood SWOT server running at http://localhost:${PORT}`);
-    console.log('.env path checked:', envPath);
-    if (USE_TURSO) console.log('Storage: Turso (persistent)');
+    if (USE_TURSO) console.log('Storage: Turso (persistent) – submissions will survive restarts');
     else console.log('Storage: JSON file at', SUBMISSIONS_FILE);
     if (!HAS_OPENAI_KEY) {
       console.warn('OPENAI_API_KEY not set. Add it to .env in the same folder as server.js and restart.');
