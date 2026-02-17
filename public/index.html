@@ -662,6 +662,7 @@
         }
         showToast('Thank you! Your input has been submitted.', 'success');
         form.reset();
+        commentsInput.value = '';
         quadrants.forEach(q => {
           state[q] = [];
           renderEntries(q);
