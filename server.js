@@ -30,7 +30,11 @@ const sessionSecret = (process.env.SESSION_SECRET || 'goodfood-swot-secret-chang
 // Storage: optional Turso (persists on ephemeral hosts) or JSON file (with optional DATA_PATH)
 const TURSO_URL = (process.env.TURSO_DATABASE_URL || '').trim();
 const TURSO_TOKEN = (process.env.TURSO_AUTH_TOKEN || '').trim();
-const USE_TURSO = TURSO_URL && TURSO_TOKEN;
+const USE_TURSO = !!(TURSO_URL && TURSO_TOKEN);
+// Warn if URL looks wrong (e.g. env vars swapped: token in URL, URL in token)
+if (USE_TURSO && !TURSO_URL.startsWith('libsql://')) {
+  console.warn('TURSO_DATABASE_URL should start with libsql:// – check that you did not swap it with TURSO_AUTH_TOKEN on Railway.');
+}
 const DATA_DIR = process.env.DATA_PATH ? path.resolve(process.env.DATA_PATH) : path.join(__dirname, 'data');
 const SUBMISSIONS_FILE = path.join(DATA_DIR, 'submissions.json');
 
@@ -63,10 +67,14 @@ async function loadSubmissionsTurso() {
     await tursoClient.execute('CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)');
     const rs = await tursoClient.execute({ sql: "SELECT value FROM store WHERE key = 'submissions'", args: [] });
     const row = rs.rows[0];
-    // Rows can be array-like (row[0]) or object (row.value / row[columns[0]])
+    if (!row) return [];
+    // Support all possible row shapes: object with .value, array index 0, or first enumerable value
     const firstCol = rs.columns && rs.columns[0];
-    const raw = row == null ? null
-      : (typeof row[0] !== 'undefined' ? row[0] : row[firstCol] ?? row.value ?? row['value']);
+    let raw = row[firstCol] ?? row.value ?? row['value'] ?? row[0];
+    if (raw == null && typeof row === 'object') {
+      const vals = Object.values(row);
+      raw = vals.length > 0 ? vals[0] : null;
+    }
     if (raw != null && raw !== '') {
       const data = JSON.parse(String(raw));
       const out = Array.isArray(data) ? data : [];
@@ -227,12 +235,13 @@ app.delete('/api/submissions', requireAuth, async (req, res) => {
   res.json({ success: true, data: [] });
 });
 
-// Debug: storage status (public – so you can hit this on your live site to see if Turso is used)
+// Debug: storage status (public – never expose secrets)
 app.get('/api/debug/storage', async (req, res) => {
   const out = {
     storage: tursoClient ? 'turso' : 'file',
     inMemoryCount: submissions.length,
     tursoConfigured: USE_TURSO,
+    tursoUrlLooksValid: TURSO_URL.startsWith('libsql://'),
     tursoClientExists: !!tursoClient,
   };
   if (tursoClient) {
@@ -245,6 +254,21 @@ app.get('/api/debug/storage', async (req, res) => {
     }
   }
   res.json(out);
+});
+
+// Force reload from Turso into memory (use if admin shows empty but Turso has data)
+app.get('/api/debug/turso-load', async (req, res) => {
+  if (!tursoClient) {
+    return res.json({ ok: false, error: 'Turso not configured' });
+  }
+  try {
+    const loaded = await loadSubmissionsTurso();
+    submissions.length = 0;
+    submissions.push(...loaded);
+    res.json({ ok: true, count: submissions.length, message: 'Reloaded from Turso. Refresh the admin dashboard.' });
+  } catch (e) {
+    res.json({ ok: false, error: e.message });
+  }
 });
 
 // Debug: check if OpenAI key is loaded (admin only)
